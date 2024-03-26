@@ -1,0 +1,72 @@
+
+.textfield:focus{
+    outline: none;
+    border: none;
+}
+.textfield{
+    outline: none;
+    border: none;
+}
+.profile{
+    position:fixed;
+    margin-top: -20px;
+    background-color: rebeccapurple;
+}
+.MainProfile {
+    position: fixed;
+    right: 25px;
+    top: 48px;
+    width: 300px;
+    height: 100vh;
+    overflow-y: auto;
+}
+.procard {
+    position: absolute;
+    overflow-y: auto; /* Change to 'auto' or 'scroll' */
+    max-height: 100%; /* Set a suitable max-height if needed */
+}
+
+
+
+.MySidebar{
+    width: 80%;
+    position: fixed;
+   
+}
+.searchbar {
+    border: none;
+    outline: none;
+    
+  }
+ .ThemeColor{
+    background-color: rgb(53, 53, 53);
+    
+ }
+.modaltext{
+   outline: none;
+}
+.dialogmenu{
+    position: absolute;
+    bottom: 150px
+
+  
+}
+.dialogbutton{
+    position: relative;
+    margin-right: auto;
+}
+.dialog{
+    position: fixed;
+    margin-right: auto;
+}
+.smallNavbar{
+    background-color: rgb(231, 229, 229);
+}
+.AccColor{
+    background-color: rgb(121, 114, 114);
+    
+}
+.Loginform{
+    max-width: 500px;
+    min-width: 300px;
+}
