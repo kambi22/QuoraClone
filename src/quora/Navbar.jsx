@@ -76,11 +76,11 @@ const Header = (props) => {
                 <Menu />
               </IconButton>
               <Sidebar open={menuButton} close={SidebarHandler} />
-              <Tooltip title='Home' placement='bottom' arrow>
+         
                 <Nav className="" >
                   <NavbarBrand style={{ cursor: 'pointer' }} onClick={() => navigate('/')} className='m-0 ms-3 me-5' ><strong style={{ fontWeight: 'bolder' }} className="h3">Quora</strong></NavbarBrand>
                 </Nav>
-              </Tooltip>
+             
             </>
           )}
           <div className="bg-white searchbar  rounded-5 w-50 d-flex"   >

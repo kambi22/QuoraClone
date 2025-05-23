@@ -15,7 +15,7 @@ const AddPost = (props) => {
   const [qustion, setqustion] = useState();
   const [qtnKey, setqtnKey] = useState();
   const [date, setdate] = useState(null);
-  const [channelName, setchannelName] = useState('Softwork');
+  const [channelName, setchannelName] = useState('Satnam Singh');
   const [post, setpost] = useState([]);
   const [postKey, setpostKey] = useState([]);
   //const [imageUrl, setimageUrl] = useState([]);
