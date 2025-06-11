@@ -3,7 +3,7 @@ import { IconButton, Button, Checkbox, TextField, Avatar, CircularProgress } fro
 import { Database, get, getDatabase, ref, set, update } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
 import { Dropdown, Modal, ToggleButton, Container, Card, Row, Col } from 'react-bootstrap';
-import { useSearchParams } from 'react-router-dom';
+import { createSearchParams, useNavigate, useSearchParams } from 'react-router-dom';
 import app from './firebase';
 import { Player } from '@lottiefiles/react-lottie-player';
 import CircalLoader from './Lotties/loader.json'
@@ -16,6 +16,7 @@ const Comments = () => {
   const [params] = useSearchParams();
   const PostKey = params.get('key')
   const database = getDatabase(app)
+  const navigate = useNavigate();
   console.log('comments post key value is:', PostKey)
 
   const handleDialogOpen = () => {
@@ -26,8 +27,8 @@ const Comments = () => {
     setShowDialog(false);
   };
 
-  useEffect(() => {
-    const postRef = ref(database, `/Posts/${PostKey}`);
+  const getPostHandler = () => {
+      const postRef = ref(database, `/Posts/${PostKey}`);
     get(postRef)
       .then((snapshot) => {
         if (snapshot.exists()) {
@@ -38,7 +39,11 @@ const Comments = () => {
         }
       })
       .catch((error) => console.error(error));
-  }, []);
+  }
+
+  useEffect(() => {
+    getPostHandler();
+  }, [PostKey]);
   const AddComments = () => {
 
     const cmtObj = {
@@ -101,22 +106,31 @@ const Comments = () => {
     }
   }
 
+    const GotoComments = (key) => {
+      getPostHandler()
+
+      navigate({
+        pathname: '/comments',
+        search: `?${createSearchParams({ key: key })}`
+      })
+    };
+
   return (
-    <div>
+    <div >
 
 
-      <Container className=''>
+      <Container className='' style={{marginBottom:'100px'}}>
       {postData ? (
         <Row className='mt-5' >
           
             <Col xl={8} md={12} >
 
-              <Card className=' w-100 '>
-                <Card.Body className='p-0 '>
-                  <img className='h-100 w-100 m-0' src={postData.ImageUrl} alt="Post image" />
+              <Card className=' w-100  rounded-5 shadow' style={{cursor:'pointer'}}>
+                <Card.Body className='p-0 rounded-5'>
+                  <img className='h-100 w-100 m-0 rounded-5' src={postData.ImageUrl} alt="Post image" />
 
                 </Card.Body>
-                <Card.Footer className='text-start bg-white'>
+                <Card.Footer className='text-start bg-white rounded-5'>
 
                   <h3 >{postData.Post}</h3>
 
@@ -143,7 +157,7 @@ const Comments = () => {
                       <Button onClick={AddComments} variant='contained' className='rounded-5'>Comment</Button>
                     </div>
 
-                    {Object.entries(PostValue).reverse().map(([key, commentText]) => (
+                    {/* {Object.entries(PostValue).reverse().map(([key, commentText]) => (
                       <div className="text-start ms-3" key={key}>
                         <div className="d-flex align-items-center">
                           <Avatar>{commentText.channeName[0]}</Avatar>
@@ -159,22 +173,11 @@ const Comments = () => {
                           <Button className='rounded-5 text-black'>Reply</Button>
                         </div>
                       </div>
-                    ))}
+                    ))} */}
 
 
                     <div className="text-start ms-3">
-                      <div className="d-flex  align-items-center">
-                        <Avatar>M</Avatar>
-                        <h5 className='ms-2'>Channel name</h5>
-                        <p className='m-3'>Just now</p>
-                      </div>
-                      <p  className='ms-5' >This is my demo comment for my project post . i create this in my comments component</p>
-                      <div className="d-flex ms-5">
-                        <IconButton><ThumbUp /></IconButton>
-                        <IconButton><ThumbDown /></IconButton>
-                        <Button className='rounded-5 text-black'>Reply</Button>
-                      </div>
-                    </div>
+                      
                     <div className="text-start ms-3">
                       <div className="d-flex  align-items-center">
                         <Avatar>M</Avatar>
@@ -194,51 +197,27 @@ const Comments = () => {
                         <h5 className='ms-2'>Channel name</h5>
                         <p className='m-3'>Just now</p>
                       </div>
-                      <p className='ms-5'>This is my demo comment for my project post . i create this in my comments component</p>
+                      <p className='ms-5'>Demo content</p>
                       <div className="d-flex ms-5">
                         <IconButton><ThumbUp /></IconButton>
                         <IconButton><ThumbDown /></IconButton>
                         <Button className='rounded-5 text-black'>Reply</Button>
                       </div>
                     </div>
-                    <div className="text-start ms-3">
-                      <div className="d-flex  align-items-center">
-                        <Avatar>M</Avatar>
-                        <h5 className='ms-2'>Channel name</h5>
-                        <p className='m-3'>Just now</p>
-                      </div>
-                      <p className='ms-5'>This is my demo comment for my project post . i create this in my comments component</p>
-                      <div className="d-flex ms-5">
-                        <IconButton><ThumbUp /></IconButton>
-                        <IconButton><ThumbDown /></IconButton>
-                        <Button className='rounded-5 text-black'>Reply</Button>
-                      </div>
-                    </div>
-                    <div className="text-start ms-3">
-                      <div className="d-flex  align-items-center">
-                        <Avatar>M</Avatar>
-                        <h5 className='ms-2'>Channel name</h5>
-                        <p className='m-3'>Just now</p>
-                      </div>
-                      <p className='ms-5'>This is my demo comment for my project post . i create this in my comments component</p>
-                      <div className="d-flex ms-5">
-                        <IconButton><ThumbUp /></IconButton>
-                        <IconButton><ThumbDown /></IconButton>
-                        <Button className='rounded-5 text-black'>Reply</Button>
-                      </div>
-                    </div>
+                    
 
+                  </div>
                   </div>
                 </Card.Footer>
               </Card>
 
             </Col>
             
-          <Col className=''>
-          <h5 className='p-3 text-start ' style={{ backgroundColor: 'lightgray' }}>Related more result s</h5>
+          <Col className='rounded-4' style={{height: '980px', overflowY:'scroll'}}>
+          <h5 className='p-3 text-start rounded-4' style={{ backgroundColor: 'lightgray' }}>Related Results</h5>
           {Object.entries(PostValue).reverse().map(([key, data]) => (
-            <Card className='mb-1 text-start' key={key}>
-              <img className='h-100 w-100' src={data.ImgUrl} alt="pos images" />
+            <Card className='mb-1 text-start rounded-4 shadow' style={{cursor:'pointer'}} key={key} onClick={() =>GotoComments(key) }>
+              <img className='h-100 w-100 rounded-top-4' src={data.ImgUrl} alt="pos images" />
               <h6 className='p-2 text-wrap'>{data.Post}</h6>
             </Card>
           ))}

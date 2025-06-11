@@ -15,7 +15,7 @@ const AddPost = (props) => {
   const [qustion, setqustion] = useState();
   const [qtnKey, setqtnKey] = useState();
   const [date, setdate] = useState(null);
-  const [channelName, setchannelName] = useState('Satnam Singh');
+  const [channelName, setchannelName] = useState('User Name');
   const [post, setpost] = useState([]);
   const [postKey, setpostKey] = useState([]);
   //const [imageUrl, setimageUrl] = useState([]);
@@ -180,7 +180,7 @@ const AddPost = (props) => {
             <>
               <div style={{ height: "300px" }}>
                 <div className="d-flex">
-                  <Avatar className="me-2">S</Avatar>
+                  <Avatar className="me-2">{channelName[0]}</Avatar>
                   <TextField type="text" variant='standard' value={channelName} onChange={(e) => setchannelName(e.target.value)} id='channel name'></TextField>
                 </div>
                 <textarea onChange={(e) => setpost(e.target.value)} placeholder="Say Somthing add post title..." className="w-100 modaltext border-0  h-25" fullWidth required />

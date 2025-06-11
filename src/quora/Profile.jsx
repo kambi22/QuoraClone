@@ -1,15 +1,36 @@
 import { AddToPhotos, Bookmark, Bookmarks, Campaign, DarkMode, Delete, Drafts, Equalizer, Language, List, Logout, MessageSharp, MonetizationOn, Settings, Star } from "@mui/icons-material";
 import { Avatar, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Card } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
-
+import app from './firebase'
+import { getAuth } from "firebase/auth";
 const Profile = (props) => {
   const navigate = useNavigate();
   const userName = useSelector(state => state.followitems.username)
   const keys = useSelector(state => state.followitems.follows);
+  const [currentUser, setCurrentUser] = useState(null); // Initialize as null
+  const auth = getAuth();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      setCurrentUser(user);
+      console.log("User data:", user); // Check what you're getting
+    });
+    return () => unsubscribe(); // Cleanup on unmount
+  }, []);
+
+  // Render nothing or loading state while checking auth
+  if (currentUser === null) {
+    return <div>Loading...</div>;
+  }
+
+  // If not logged in
+  if (!currentUser) {
+    return <div>Please sign in</div>;
+  }
 
   const LogoutConfirm = () => {
     Swal.fire({
@@ -29,9 +50,22 @@ const Profile = (props) => {
 
       <Card className="shadow procard w-100 ms-auto  ">
         <Card.Header>
-          <div className="d-flex p-1  align-items-center">
-            <Avatar className="">{userName[0]}</Avatar>
-            <h5 className="ms-2">{userName}</h5>
+          <div className="d-flex p-1 align-items-center">
+            {currentUser? (currentUser.photoURL && (
+              <img
+                src={currentUser.photoURL}
+                alt="Profile"
+                className="avatar"
+                referrerPolicy="no-referrer" // Needed for Google images
+                style={{borderRadius:'50%', height:'40px', width:'40px'}}
+              
+              />
+            )):(
+              <Avatar>U</Avatar>
+            )}
+            <h5 className="ms-2">
+              {currentUser.displayName || currentUser.email || "User"}
+            </h5>
           </div>
         </Card.Header>
         <ListItemButton onClick={() => navigate('/myposts')}>
@@ -115,8 +149,8 @@ const Profile = (props) => {
           </ListItemIcon>
           <ListItemText primary='Delete Account' />
         </ListItemButton>
-       
-        
+
+
 
 
       </Card>

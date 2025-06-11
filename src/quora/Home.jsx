@@ -1,8 +1,7 @@
 import { Bookmark, Comment, ErrorRounded, Favorite, FavoriteBorder, MoreVertOutlined, Share, ThumbDown, ThumbDownAltOutlined, ThumbUp, ThumbUpAltOutlined, ThumbUpOutlined } from "@mui/icons-material";
-import { Avatar, Button, Icon, IconButton, Checkbox, ListItemIcon, ListItemText, Menu, MenuItem, Popover, Typography, ListItemButton, Drawer, Snackbar, Skeleton } from "@mui/material";
+import { Avatar, Button, Card, Icon, IconButton, Checkbox, ListItemIcon, ListItemText, Menu, MenuItem, Popover, Typography, ListItemButton, Drawer, Snackbar, Skeleton, Grid, Container, CardHeader, CardContent, CardMedia, CardActionArea, Box, CardActions } from "@mui/material";
 import { Database, get, getDatabase, ref, set, update } from "firebase/database";
 import React, { useEffect, useState } from "react"
-import { Card, Col, Container, Dropdown, Row, Toast } from "react-bootstrap";
 import { Link, createSearchParams, useNavigate } from "react-router-dom";
 import app from "./firebase";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,6 +12,8 @@ import { AddItem } from "./Services/Action/action";
 import { Player } from "@lottiefiles/react-lottie-player";
 import Loader from './Lotties/loader.json'
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { BarLoader, DotLoader } from "react-spinners";
+import followindLoader from './Lotties/followingLoader.json';
 //import { FacebookShareButton, TwitterShareButton, EmailShareButton } from 'react-share';
 const Home = (props) => {
   const [Like, setLike] = useState(false);
@@ -26,8 +27,8 @@ const Home = (props) => {
   const [IsOnline, setIsOnline] = useState(navigator.onLine);
   const [followItem, setfollowItem] = useState([]);
   const [postDateTime, setpostDateTime] = useState();
-  const [loading, setloading] = useState();
-  const [loader, setLoader] = useState();
+  const [loading, setloading] = useState(false);
+
   const database = getDatabase(app)
   const navigate = useNavigate();
   const dispatch = useDispatch()
@@ -35,6 +36,7 @@ const Home = (props) => {
 
   const readPost = async () => {
     try {
+      setloading(true)
       const Postresp = await get(ref(database, '/Posts/'));
       if (Postresp.exists()) {
         const postObj = {};
@@ -52,7 +54,7 @@ const Home = (props) => {
           };
         });
         setPostValue(postObj);
-        setloading(PostValue)
+
         console.log("postvalueis is", PostValue)
         console.log("postvalueis is", PostValue.length)
       } else {
@@ -60,8 +62,8 @@ const Home = (props) => {
       }
     } catch (error) {
       console.log("Something went wrong:", error);
-      setLoader(loader)
-    }
+
+    } finally { setloading(false) }
   };
   useEffect(() => {
     readPost()
@@ -76,7 +78,7 @@ const Home = (props) => {
         console.log("user logout")
         navigate('/loginpage')
       } else {
-        
+
         dispatch(AddItem(key))
         setToast(!toast)
         Swal.fire({
@@ -151,93 +153,107 @@ const Home = (props) => {
     };
   }, []);
 
+  const bgColores = ['bg-info', 'bg-primary', 'bg-warning', 'bg-success']
+
+
+
   return (
-    <div className="d-flex mb-5" >
-
-
-      {IsOnline && loading ? (
-
-        <Container className="mt-3 w-100  " >
-          <Row className="mb-2" style={{ height: '400px' }}>
-            {Object.entries(PostValue).reverse().map(([key, item]) => (
-              <>
-                <Col className="mb-2" xs={12} sm={8} md={6} xl={4}  >
-                  <Card className="mt-3 h-100 w-100 "  >
-                    <Card.Header >
-                      <div className="d-flex  align-items-center ">
-                        <Avatar>{item.ChannelName[0]}</Avatar>
-                        <div className="ms-2 me-2" >
-                          <h6 className="m-0 p-0">{item.ChannelName}</h6>
-                          <p className="m-0 p-0 text-start" >{item.DateTime}</p>
-                        </div>
-                        <Button className="mb-2 ms-auto m-3" onClick={() => FollowHandler(key)}>Follow</Button>
-
-
-                      </div>
-                      <h6 className="text-start">{item.Post}.</h6>
-                      <h6 className="text-start">{item.Comment}</h6>
-                    </Card.Header>
-                    <Card.Body className="p-0 bg-info" style={{ height: '150px' }} >
-                      <img className="h-100 w-100 p-0" src={item.ImageUrl} alt="image" />
-                    </Card.Body>
-                    <Card.Footer className="d-flex" >
-                      <div className="" >
-
-                        <Checkbox className="" onClick={() => setLike(!Like)} icon={<ThumbUpAltOutlined />} checkedIcon={<ThumbUp />} />
-
-                        <Snackbar message={!Like ? 'Liked Post' : 'DisLike Post'} open={snak} autoHideDuration={2000} onClose={() => setsnak(true
+    <div className="d-flex mb-5  "  >
 
 
 
-                        )} />
-
-
-                        <Checkbox className="" icon={<ThumbDownAltOutlined />} checkedIcon={<ThumbDown />} />
-                        <i>
-                          <FontAwesomeIcon icon={<ThumbUp />} />
-                        </i>
-                      </div>
-                      <IconButton className="" onClick={() => { GotoComments(key) }} >
-                        <Comment />
-                      </IconButton>
-                      <IconButton onClick={SharePost} className="" >
-                        <Share />
-                      </IconButton>
-
-                    </Card.Footer>
-                  </Card>
-
-                </Col>
-              </>
-            ))}
-
-          </Row>
-
-        </Container>
-      ) : (
-        <Container className="mt-5 " >
-          <Row className="mb-2" style={{ height: '400px' }}>
-            {Object.entries(PostValue).reverse().map(([key, item]) => (
-
-              <Col className="mb-2" xs={12} sm={8} md={6} xl={4}  >
-                <div className="d-flex" >
-                  <Skeleton animation='wave' variant='circular' height={40} width={40} />
-                  <Skeleton animation='wave' className="w-75 ms-2 mt-1" variant='rectangular' height={30} />
-                </div>
-                <div className="d-flex mt-2 raunded-5">
-                  <Skeleton animation='wave' variant='rectangular' className="w-100" height={200} />
-                </div>
-                <div>
-                  <Skeleton animation='wave' variant="rectangular" className="w-50 mt-2" height={30} />
+      <Container maxWidth="xl" sx={{ mt: 3, mb: 12, height: '100vh' }}>
+        <Grid container spacing={3} sx={{ mb: 12 }}>
+          {loading ? Object.entries(PostValue).reverse().map(([key, item], i) => (
+            <Grid item xs={12} sm={8} md={6} xl={4} key={key}>
+              <Card sx={{ height: '100%', borderRadius: 4, boxShadow: 3 }}>
+                <div className="d-flex m-3">
+             
+                    <Avatar className={`${bgColores[i % bgColores.length]}`}>
+                      {item.ChannelName[0]}
+                    </Avatar>
+                
+                    <div className="ms-1">
+                      <Typography variant="h6" sx={{ m: 0, p: 0 }}>
+                      {item.ChannelName}
+                    </Typography>
+                
+                    <Typography variant="body2" color="text.secondary" sx={{ m: 0, p: 0 }}>
+                      {item.DateTime}
+                    </Typography>
+                    </div>
+              
+                    <div className="ms-auto">
+                      <Button className='p-2 rounded-4' variant="outlined" onClick={() => FollowHandler(key)}>
+                      Follow
+                    </Button>
+                    </div>
+                  
                 </div>
 
-              </Col>
-            ))}
-          </Row>
-          <Snackbar title="Your Offline" message='Check Internet Your Offline' />
 
-        </Container>
-      )}
+                <CardContent sx={{ pt: 0 }}>
+                  <Typography variant="h6" sx={{ textAlign: 'left', ml: 1, mb: 1 }}>
+                    {item.Post}.
+                  </Typography>
+                  <Typography variant="h6" sx={{ textAlign: 'left', mb: 2 }}>
+                    {item.Comment}
+                  </Typography>
+                </CardContent>
+                <CardMedia
+                  component="img"
+                  height="250"
+                  image={item.ImageUrl}
+                  alt="Post images"
+                  sx={{ p: 0 }}
+                />
+                <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Checkbox
+                      onClick={() => setLike(!Like)}
+                      icon={<ThumbUpAltOutlined />}
+                      checkedIcon={<ThumbUp />}
+                    />
+                    <Snackbar
+                      message={!Like ? 'Liked Post' : 'DisLike Post'}
+                      open={snak}
+                      autoHideDuration={2000}
+                      onClose={() => setsnak(true)}
+                    />
+                    <Checkbox
+                      icon={<ThumbDownAltOutlined />}
+                      checkedIcon={<ThumbDown />}
+                    />
+                  </Box>
+                  <Box>
+                    <IconButton onClick={() => { GotoComments(key) }}>
+                      <Comment />
+                    </IconButton>
+                    <IconButton onClick={SharePost}>
+                      <Share />
+                    </IconButton>
+                  </Box>
+                </CardActions>
+              </Card>
+            </Grid>
+          )) : (
+            <Box className=' m-auto mt-5' sx={{  mt: 5 }}>
+              <Player
+                src={followindLoader}
+                loop
+                autoplay
+                style={{ height: '200px', width: '200px' }}
+              />
+              <Typography variant="body1" >
+                Loading...
+              </Typography>
+            </Box>
+          )}
+        </Grid>
+      </Container>
+
+
+
 
     </div>
 

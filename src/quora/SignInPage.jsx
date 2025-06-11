@@ -4,7 +4,7 @@ import profileAnimation from './Lotties/profileicon.json'
 import { Button, Checkbox, IconButton, InputAdornment, TextField } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import {getAuth, createUserWithEmailAndPassword, updateProfile} from 'firebase/auth'
+import {getAuth, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider} from 'firebase/auth'
 import Swal from "sweetalert2";
 import app from "./firebase";
 const SingInPage = (props) => {
@@ -16,7 +16,7 @@ const SingInPage = (props) => {
   const navigate = useNavigate();
 
   const auth = getAuth(app)
-
+  
 
   const SignInHandler = () => {
       if (FirstName === '' || LastName === '' || Email === '' || Password === '' ) {
@@ -26,7 +26,7 @@ const SingInPage = (props) => {
           text:'Please Enter Your Details',
           showConfirmButton:true
         })
-
+console.log('firstname: ', FirstName, 'lastname: ', LastName, 'email:', Email, 'password:', Password)
 
       }else{
         createUserWithEmailAndPassword(auth,Email,Password).then((snapshot)=>{

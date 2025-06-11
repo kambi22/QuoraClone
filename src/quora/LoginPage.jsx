@@ -5,18 +5,55 @@ import { Link, useNavigate } from "react-router-dom";
 import profileAmimation from './Lotties/profileicon.json'
 import { Login, Visibility, VisibilityOff } from "@mui/icons-material";
 import Swal from "sweetalert2";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import app from "./firebase";
 import { useDispatch } from "react-redux";
 import { AddProfile } from "./Services/Action/action";
+import GoogleButton from "react-google-button";
 const LoginPage = (props) => {
   const [showPasword, setshowPasword] = useState(false);
-  const [Email, setEmail] = useState('');
-  const [Password, setPassword] = useState('');
+  const [Email, setEmail] = useState('demo@gmail.com');
+  const [Password, setPassword] = useState('demo@22');
 
   const auth = getAuth(app);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const googleProvider = new GoogleAuthProvider();
+
+  // Optional: Add custom scopes or parameters
+  googleProvider.setCustomParameters({
+    prompt: "select_account"
+  });
+
+  const signInWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      // This gives you a Google Access Token
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      // The signed-in user info
+      const user = result.user;
+      console.log(user);
+
+      Swal.fire({
+        icon: 'success',
+        title: `Hi ${user.displayName || 'Demo Singh'}, welcome!`
+
+      ,
+        text: 'Login Sucessfull',
+        timer: 3000,
+        showConfirmButton: false
+      });
+      navigate('/')
+    } catch (error) {
+      console.error("Error during sign in:", error);
+      // Handle errors here
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        // Handle account linking here if needed
+      }
+    }
+  }
 
   const PasswordViseabilty = () => {
     setshowPasword(!showPasword)
@@ -37,15 +74,15 @@ const LoginPage = (props) => {
           const user = snapshot.user;
           const userName = user.displayName
           console.log('username', userName);
-          
+
           dispatch(AddProfile(userName))
 
           Swal.fire({
             icon: 'success',
             title: `Hi ${userName}`,
             text: 'Login Sucessfull',
-            timer:3000,
-            showConfirmButton:false
+            timer: 3000,
+            showConfirmButton: false
           });
           navigate('/')
         })
@@ -56,7 +93,7 @@ const LoginPage = (props) => {
             text: 'Somthing wrong please try again',
             showConfirmButton: true,
           });
-          console.log('error',error)
+          console.log('error', error)
         });
 
     }
@@ -84,7 +121,15 @@ const LoginPage = (props) => {
         </div>
 
         <br />
-        <Button variant='contained' onClick={LoginHandler} className="w-100 mt-3" >Login</Button>
+        <Button variant='contained' size="large" onClick={LoginHandler} className="w-100 mt-3" >Login</Button>
+       <p className="text-center mt-2">OR</p>
+       <hr />
+        <GoogleButton
+          className="mt-3 w-100"
+          style={{ marginTop: '20px', width: '100%', borderRadius:'10px' }}
+          onClick={signInWithGoogle}
+        />
+
         <div className="d-flex mb-3">
           <Link  >Forget Password</Link>
 

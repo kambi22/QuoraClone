@@ -8,7 +8,7 @@ import { Player } from "@lottiefiles/react-lottie-player";
 import { RemoveItem } from "./Services/Action/action";
 import followindLoader from './Lotties/followingLoader.json';
 import Swal from "sweetalert2";
-
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 const Following = (props) => {
   const [postDataList, setPostDataList] = useState([]);
   const database = getDatabase(app);
@@ -55,15 +55,16 @@ const Following = (props) => {
     });
   }
 
+  const AvtarBackground = ['bg-info', 'bg-primary', 'bg-warning', 'bg-success']
   return (
     <div>
-      <Container className="mt-5">
+      <Container className="mt-5" style={{marginBottom:'100px'}}>
         {keys.length > 0 ? (
           postDataList.length > 0 ? (
             postDataList.map((postData, index) => (
-              <Card className="mt-2 shadow" key={postData.id || index}>
+              <Card className="mt-2 shadow rounded-4" key={postData.id || index}>
                 <div className="d-flex align-items-center m-3">
-                  <Avatar className='bg-info' size='large'>{postData.ChannelName[0]}</Avatar>
+                  <Avatar className={`${AvtarBackground[index]}`} size='large'>{postData.ChannelName[0]}</Avatar>
                   <div className="ms-2">
                     <h5 className="m-0 p-0">{postData.ChannelName}</h5>
                     <p className="m-0 p-0 text-start">56 followers</p>

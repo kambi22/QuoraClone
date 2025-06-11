@@ -1,171 +1,236 @@
-import { Delete, Edit, Height } from "@mui/icons-material";
-import { Avatar, Button, Container, IconButton, Input, Skeleton, TextField } from "@mui/material";
+import { Delete, Edit } from "@mui/icons-material";
+import { Avatar, Button, IconButton, Input } from "@mui/material";
 import { get, getDatabase, ref, remove, update } from "firebase/database";
-import React, { useEffect, useState } from "react"
-import { Card, Col, Modal, Row } from "react-bootstrap";
+import { useEffect, useState } from "react"
+import { Card, Col, Container, Modal, Row } from "react-bootstrap";
 import app from "./firebase";
-import { Player } from "@lottiefiles/react-lottie-player";
-import loader from './Lotties/loader.json'
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router";
-import { useSelector } from "react-redux";
-const MyPosts = (props) => {
+import { Player } from "@lottiefiles/react-lottie-player";
+import followindLoader from './Lotties/followingLoader.json';
+const MyPosts = () => {
   const [postData, setpostData] = useState([]);
-  const [loading, setloading] = useState(); // Initialize loading state as true
+  const [loading, setloading] = useState(true);
   const [toggle, settoggle] = useState(false);
-  const [postKey, setpostKey] = useState();
   const [editPost, seteditPost] = useState('');
+  const [editKey, setEditKey] = useState('');
+  
   const navigate = useNavigate();
-  const database = getDatabase(app)
+  const database = getDatabase(app);
 
+  // Fetch user's posts
   useEffect(() => {
-    const readPost = async () => {
+    const fetchMyPosts = async () => {
       try {
-        const dataref = ref(database, '/Posts');
-        const snapshot = await get(dataref);
+        setloading(true);
+        const postsRef = ref(database, '/Posts/');
+        const snapshot = await get(postsRef);
         if (snapshot.exists()) {
-          const obj = {};
-          snapshot.forEach((data) => {
-            const value = data.val();
-            const key = data.key;
-            setloading(value);
-            obj[key] = {
-              post: value.Post,
-              img: value.ImageUrl,
-              channelname: value.ChannelName
-            };
-          });
-          setpostData(obj);
-        } else {
-          console.log('data not found');
+          const allPosts = snapshot.val();
+          // Filter posts by current user (you'll need to implement user authentication)
+          // For now, showing all posts - replace with actual user filtering
+          setpostData(allPosts);
         }
       } catch (error) {
-        console.error('error', error);
+        console.error("Error fetching posts:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load your posts'
+        });
+      } finally {
+        setloading(false);
       }
     };
 
-    // Call the readPost function here
-    readPost();
-  }, []);
+    fetchMyPosts();
+  }, [database]);
 
-  const ModalHandlerd = (postText, key) => {
-    settoggle(!toggle)
-    console.log('modal key is ', key)
-    console.log('modal key is ', postText)
-    seteditPost(postText)
-    setpostKey(key)
-  };
-
-  const updatePost = () => {
-
-    const edit = {
-      Post: editPost
+  // Modal handler for editing posts
+  const ModalHandlerd = (postContent = '', key = '') => {
+    if (postContent && key) {
+      seteditPost(postContent);
+      setEditKey(key);
     }
-    const postref = ref(database, `/Posts/${postKey}`)
-
-    update(postref, edit).then(() => {
-      Swal.fire({
-        icon: 'success',
-        title: 'Post',
-        text: 'Post Add Successfylly',
-        timer: 3000,
-
-      })
-      navigate('/')
-    }).catch((error) => console.error('error', error))
-
-  }
-
-  const deletePost = (key) => {
-
-    Swal.fire({
-      icon: 'success',
-      title: 'Post',
-      text: 'Post Add Successfylly',
-      timer: 3000,
-      showConfirmButton: true
-
-    })
-    const postref = ref(database, `/Posts/${key}`)
-
-    remove(postref).then(() => {
-
-      window.location.reload()
-      console.log('delete post ')
-    }).catch((error) => console.error('error', error))
+    settoggle(!toggle);
   };
+
+  // Delete post function
+  const deletePost = async (key) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      });
+
+      if (result.isConfirmed) {
+        const postRef = ref(database, `/Posts/${key}`);
+        await remove(postRef);
+        
+        // Update local state
+        const updatedPosts = { ...postData };
+        delete updatedPosts[key];
+        setpostData(updatedPosts);
+
+        Swal.fire('Deleted!', 'Your post has been deleted.', 'success');
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      Swal.fire('Error!', 'Failed to delete post.', 'error');
+    }
+  };
+
+  console.log('post data:', postData)
+  // Update post function
+  const updatePost = async () => {
+    try {
+      if (!editPost.trim()) {
+        Swal.fire('Error!', 'Post content cannot be empty.', 'error');
+        return;
+      }
+
+      const postRef = ref(database, `/Posts/${editKey}`);
+      await update(postRef, {
+        post: editPost,
+        updatedAt: new Date().toISOString()
+      });
+
+      // Update local state
+      const updatedPosts = {
+        ...postData,
+        [editKey]: {
+          ...postData[editKey],
+          post: editPost
+        }
+      };
+      setpostData(updatedPosts);
+
+      settoggle(false);
+      seteditPost('');
+      setEditKey('');
+      
+      Swal.fire('Success!', 'Post updated successfully.', 'success');
+    } catch (error) {
+      console.error("Error updating post:", error);
+      Swal.fire('Error!', 'Failed to update post.', 'error');
+    }
+  };
+
+  // Avatar background colors for cycling
+  const bgColors = ['#17a2b8', '#007bff', '#ffc107', '#28a745'];
+  const getAvatarColor = (index) => bgColors[index % bgColors.length];
+console.log("post data", postData)
   return (
     <div>
-
-      <Container className="mt-5" >
-        <Row className=" w-100 " style={{ height: '300px' }}>
-          {loading ? (
-            Object.entries(postData).reverse().map(([key, item]) => (
-
-              <Col className="mt-3 w-100" key={key} xs={12} sm={8} md={6} xl={4} >
+      <Container>
+         <Row className="mb-2 gap-" style={{ height: '400px', marginBottom:'100px' }}>
+                  {!loading ? Object.entries(postData).reverse().map(([key, item], index) => (
+                    <>
+                      <Col key={key} className="mb-4" xs={12} sm={6} md={4} xl={3}>
                 <Card className="shadow w-100 mt-3 h-100">
-                  <Card.Header className="d-flex " >
-                    <Avatar  >S</Avatar>
-                    <h5 className="m-2">{item.channelname}</h5>
+                  <Card.Header className="d-flex align-items-center">
+                    <Avatar 
+                      style={{ 
+                        backgroundColor: getAvatarColor(index),
+                        color: 'white'
+                      }}
+                      sizes="20"
+                    >
+                      {item.ChannelName ? item.ChannelName[0].toUpperCase() : 'U'}
+                    </Avatar>
+                    <h6 className="m-2 mb-0">{item.ChannelName || 'Unknown User'}</h6>
                   </Card.Header>
-                  <Card.Body className="d-flex p-0" style={{height:'200px'}} >
-
-                    <img className="w-100 h-100 p-0" src={item.img} alt="image" />
-
-                  </Card.Body>
+                  
+                  
+                    <Card.Body className="p-0" style={{ height: '200px' }}>
+                      <img 
+                        className="w-100 h-100" 
+                        src={item.ImageUrl} 
+                        alt="Post content"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </Card.Body>
+                  
                   <Card.Footer>
-                    <h5 className="text-start">{item.post}</h5>
-                    <div className="text-end ">
-                      <IconButton onClick={() => ModalHandlerd(item.post, key)} ><Edit /></IconButton>
-                      <IconButton onClick={() => deletePost(key)}><Delete /></IconButton>
+                    <p className="text-start mb-2">{item.Post || 'No content'}</p>
+                    <div className="text-end">
+                      <IconButton 
+                        onClick={() => ModalHandlerd(item.post, key)}
+                        color="primary"
+                        size="small"
+                      >
+                        <Edit />
+                      </IconButton>
+                      <IconButton 
+                        onClick={() => deletePost(key)}
+                        color="error"
+                        size="small"
+                      >
+                        <Delete />
+                      </IconButton>
                     </div>
                   </Card.Footer>
                 </Card>
               </Col>
-
-            ))
-          ) : (
-          
-            <Container className="mt-5" >
-            <Row className=" w-100 " style={{ height: '350px' }}>
-            {Object.entries(postData).reverse().map(([key, item]) => (
-                  <Col className="mt-3" >
-
-                    <div className="d-flex" >
-                      <Skeleton animation='wave' variant='circular' height={40} width={40} />
-                      <Skeleton animation='wave' className="w-75 ms-2 mt-1" variant='rectangular' height={30} />
+                    </>
+                  )) : (
+                    <div className="">
+                      <div className="mt-5">
+                        <Player src={followindLoader} loop autoplay style={{ height: '200px', width: '200px' }} />
+                      </div>
+        
+                      Loading...
                     </div>
-                    <div className="d-flex mt-2">
-                      <Skeleton style={{ height: '350px' }} animation='wave' variant='rectangular' className="w-100" height={200} />
-                    </div>
-                    <div>
-                      <Skeleton animation='wave' variant="rectangular" className="w-50 mt-2" height={30} />
-                    </div>
-                  </Col>
-               
-            ))}
-          </Row>
+        
+        
+                  )}
+        
+                </Row>
 
-          </Container>
-          )}
-        </Row>
-        <Modal show={toggle} onHide={ModalHandlerd}  >
+        {/* Edit Post Modal */}
+        <Modal show={toggle} onHide={() => ModalHandlerd()} centered>
           <Modal.Header closeButton>
-            <h5>Edt Post</h5>
+            <Modal.Title>Edit Post</Modal.Title>
           </Modal.Header>
-          <Modal.Body >
-            <div className="w-100" style={{ height: '300px' }}>
-              <Input className="w-100" value={editPost} onChange={(e) => seteditPost(e.target.value)}   ></Input>
+          <Modal.Body>
+            <div className="mb-3">
+              <Input
+                multiline
+                rows={6}
+                className="w-100"
+                value={editPost}
+                onChange={(e) => seteditPost(e.target.value)}
+                placeholder="Edit your post content..."
+                style={{ minHeight: '150px' }}
+              />
             </div>
-
-            <div className="justify-content-end d-flex ">
-              <Button onClick={updatePost} variant="contained" className="rounded-5 " >Done</Button>
+            <div className="d-flex justify-content-end gap-2">
+              <Button 
+                onClick={() => ModalHandlerd()} 
+                variant="outlined"
+                color="secondary"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={updatePost} 
+                variant="contained" 
+                color="primary"
+                disabled={!editPost.trim()}
+              >
+                Update Post
+              </Button>
             </div>
           </Modal.Body>
         </Modal>
       </Container>
     </div>
-  )
+  );
 };
 
 export default MyPosts;

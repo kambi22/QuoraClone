@@ -16,7 +16,7 @@ const Answers = (props) => {
   const [Data, setData] = useState([]);
   const [QtnData, setQtnData] = useState([]);
   const [ShowModal, setShowModal] = useState(false);
-  const [ansupModel ,setansupModel ] = useState(false);
+  const [ansupModel, setansupModel] = useState(false);
   const [QtnKey, setQtnKey] = useState([]);
   const [answerKey, setanswerKey] = useState('');
   const [Answer, setAnswer] = useState([]);
@@ -110,35 +110,37 @@ const Answers = (props) => {
     setShowModal(!ShowModal)
   };
 
+  const AvtarBackground = ['bg-info', 'bg-primary', 'bg-warning', 'bg-success']
+
   return (
     <div className=" " >
 
-      <Container className=" mt-5 mb-5">
+      <Container className=" mt-5 mb-5" style={{marginBottom:'100px'}}>
         {IsOnline && loading ? (
-          Object.entries(QtnValue).reverse().map(([key, item]) => (
+          Object.entries(QtnValue).reverse().map(([index, item]) => (
 
             <>
-              <Card className="shadow mt-2" key={key}>
+              <Card className=" mt-2 rounded-4" key={index}>
                 <Card.Header className="d-flex">
-                  <Avatar className="" >S</Avatar>
+                  <Avatar className={`${AvtarBackground[index]}`} size='large'>S</Avatar>
                   <Card.Title className="ms-2 mt-2">UserName</Card.Title>
                 </Card.Header>
                 <Card.Body className=" text-start" >
                   <div >
                     <h5>{item.question}?</h5>
                   </div>
-                  <Button onClick={() => { ModalHandler(key, item.question) }} className="rounded-5 mt-2" variant="contained">Answer</Button>
+                  <Button onClick={() => { ModalHandler(index, item.question) }} className="rounded-4 shadow-none mt-2" variant="contained">Answer</Button>
                 </Card.Body>
                 <Card.Footer>
-                  <Accordion key={key}   >
+                  <Accordion key={index} className="shadow-none rounded-4" >
                     <AccordionSummary style={{ backgroundColor: '#FAFAFA' }} expandIcon={<ExpandMore />} id="fist" aria-controls="fist-content">Answer</AccordionSummary>
                     <AccordionDetails className="text-start d-flex">
                       <div className="">
                         <h5 className=" text-wrap">{item.answer}</h5>
-                       <div className="">
-                       <IconButton onClick={() => {AnsUpdateModal(key, item.question,item.answer) }}   ><Edit /></IconButton>
-                        <IconButton onClick={() => deleteAnswer(key)}><Delete /></IconButton>
-                       </div>
+                        <div className="">
+                          <IconButton onClick={() => { AnsUpdateModal(index, item.question, item.answer) }}   ><Edit /></IconButton>
+                          <IconButton onClick={() => deleteAnswer(index)}><Delete /></IconButton>
+                        </div>
                       </div>
                     </AccordionDetails>
                   </Accordion>
@@ -153,13 +155,13 @@ const Answers = (props) => {
             <Player src={commetLoader} speed={0.8} loop autoplay style={{ height: '300px', width: '300px' }} />
           </div>
         )}
-      
-      
-      
+
+
+
         <Modal show={ShowModal} size='lg' onHide={ModalHandler} className="">
           <Modal.Header closeButton>
             <div className="d-flex ">
-            <h5 className="m-2">Add Answer</h5>
+              <h5 className="m-2">Add Answer</h5>
             </div>
           </Modal.Header>
           <Modal.Body className=" p-0 p-2" >
@@ -179,7 +181,7 @@ const Answers = (props) => {
         <Modal show={ansupModel} size='lg' onHide={AnsUpdateModal} className="">
           <Modal.Header closeButton>
             <div className="d-flex ">
-              
+
               <h5 className="m-2">Edit Answer</h5>
             </div>
           </Modal.Header>

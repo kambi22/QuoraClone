@@ -3,6 +3,13 @@
     outline: none;
     border: none;
 }
+/* Hide scrollbar for Webkit-based browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  display: none;
+}
+
+
+
 .textfield{
     outline: none;
     border: none;
@@ -25,7 +32,9 @@
     overflow-y: auto; /* Change to 'auto' or 'scroll' */
     max-height: 100%; /* Set a suitable max-height if needed */
 }
-
+.homeDiv{
+    height: fit-content;
+}
 
 
 .MySidebar{

@@ -29,7 +29,7 @@ import Spiners from "./Spiners";
 import CreditCard from "./CreditCard";
 import DeleteAccount from "./DeleteAccount";
 import ProtectedRouet from "./ProtectedRoute";
-const Quora = (props) => {
+const Routing = (props) => {
   return (
     <div>
 <BrowserRouter>
@@ -65,4 +65,4 @@ const Quora = (props) => {
   )
 };
 
-export default Quora;
+export default Routing;
